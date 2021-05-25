@@ -83,7 +83,7 @@ def get_ldap_user_certificate(username):
                          search_scope=SUBTREE,
                          attributes=['userCertificate'])
         # the entries method in connection object returns the results
-        results = ldap_conn.entries[0]['userCertificate'][0]
+        results = ldap_conn.entries[0]['userCertificate'][0].decode("utf-8")
     except LDAPException as e:
         results = str(e)
         print(results)
