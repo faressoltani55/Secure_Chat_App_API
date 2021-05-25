@@ -6,6 +6,7 @@ import jwt
 from flask import request, jsonify, Flask, session, send_file
 
 # Create the application instance
+import certificates
 from pki import generate_server_certificate
 
 app = Flask(__name__, template_folder="templates")
@@ -76,6 +77,15 @@ def logout():
 @check_for_token
 def get_user_certificate(username):
     return jsonify(str(auth.get_ldap_user_certificate(username)))
+
+
+@app.route('/sign', methods=['POST'])
+@check_for_token
+def get_signed_certificate():
+    pub_key = request.json["publicKey"]
+    username = request.json["username"]
+    email = request.json["email"]
+    return jsonify(str(certificates.generate_client_certificate(emailAddress=email, commonName=username, key=pub_key)))
 
 
 @app.route('/all')

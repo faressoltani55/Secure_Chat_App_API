@@ -1,6 +1,13 @@
 from OpenSSL import crypto
 
 
+def get_server_key():
+    with open("server_pki/.pem", "r") as pkey_file:
+        pkey_text = pkey_file.read()
+        pkey = crypto.load_privatekey(crypto.FILETYPE_PEM, pkey_text)
+    return pkey
+
+
 def generate_client_key_pair(password):
     try:
         key = crypto.PKey()
@@ -33,11 +40,15 @@ def generate_client_certificate(
         organizationUnitName="ChatServerCompany",
         serialNumber=0,
         validityEndInSeconds=10 * 365 * 24 * 60 * 60,
-        CERT_FILE="client_certificate/cert.pem"):
+        CERT_FILE="client_certificate/cert.pem",
+        key=None):
     # can look at generated file using openssl:
     # openssl x509 -inform pem -in selfsigned.crt -noout -text
     # create a key pair
-    k = generate_client_key_pair("passphrase")
+    if key is None:
+        k = generate_client_key_pair("passphrase")
+    else:
+        k = crypto.load_publickey(crypto.FILETYPE_PEM, key)
     # create a self-signed cert
     cert = crypto.X509()
     cert.get_subject().C = countryName
@@ -52,13 +63,9 @@ def generate_client_certificate(
     cert.gmtime_adj_notAfter(validityEndInSeconds)
     cert.set_issuer(cert.get_subject())
     cert.set_pubkey(k)
-    with open("server_pki/.pem", "r") as pkey_file:
-        pkey_text = pkey_file.read()
-        pkey = crypto.load_privatekey(crypto.FILETYPE_PEM, pkey_text)
+    pkey = get_server_key()
     cert.sign(pkey, 'sha512')
+    dumped_cert = crypto.dump_certificate(crypto.FILETYPE_PEM, cert).decode("utf-8")
     with open(CERT_FILE, "wt") as f:
-        f.write(crypto.dump_certificate(crypto.FILETYPE_PEM, cert).decode("utf-8"))
-
-
-def verify_certificate():
-    print("certificate verification")
+        f.write(dumped_cert)
+    return dumped_cert
