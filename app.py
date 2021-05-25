@@ -5,6 +5,8 @@ import jwt
 from flask import request, jsonify, Flask, session
 
 # Create the application instance
+from pki import generate_server_certificate
+
 app = Flask(__name__, template_folder="templates")
 app.config['SECRET_KEY'] = 'ChatAppSecretKey'
 
@@ -84,4 +86,4 @@ def authorized():
 
 # If we're running in stand alone mode, run the application
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(ssl_context=('pki/certificate.crt', 'pki/.pem'), debug=True)
