@@ -68,6 +68,28 @@ def get_ldap_users():
     return results
 
 
+def get_ldap_user_certificate(username):
+    # Provide a search base to search for.
+    search_base = 'ou=users,ou=system'
+    # provide a uidNumber to search for. '*" to fetch all users/groups
+    search_filter = '(&(objectClass=inetOrgPerson)(cn=' + username + '))'
+
+    # Establish connection to the server
+    ldap_conn = root_connect()
+    try:
+        # only the attributes specified will be returned
+        ldap_conn.search(search_base=search_base,
+                         search_filter=search_filter,
+                         search_scope=SUBTREE,
+                         attributes=['userCertificate'])
+        # the entries method in connection object returns the results
+        results = ldap_conn.entries[0]['userCertificate'][0]
+    except LDAPException as e:
+        results = str(e)
+        print(results)
+    return results
+
+
 def create_user(user, ldap_user):
     ldap_user["cn"] = user["username"]
     ldap_user["sn"] = user["username"]
@@ -90,17 +112,14 @@ def subscribe(user):
     # Bind connection to LDAP server
     ldap_conn = root_connect()
     user_dn = f'cn={ldap_attr["cn"]},ou=users,ou=system'
-    print('hey')
     try:
         # object class for a user is inetOrgPerson
         ldap_conn.add(dn=user_dn,
                       attributes=ldap_attr)
         print(ldap_conn.result)
-        print("hyooooooo")
     except LDAPException as e:
         response = e
         print(e)
-    print("hey")
     return ldap_conn.result
 
 
