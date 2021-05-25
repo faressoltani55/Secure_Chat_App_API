@@ -72,6 +72,12 @@ def logout():
     return jsonify({"response": "Logged out successfully !"})
 
 
+@app.route('/<username>/certificate')
+@check_for_token
+def get_user_certificate(username):
+    return jsonify(str(auth.get_ldap_user_certificate(username)))
+
+
 @app.route('/all')
 @check_for_token
 def get_users():
