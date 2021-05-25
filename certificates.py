@@ -46,9 +46,9 @@ def generate_client_certificate(
     # openssl x509 -inform pem -in selfsigned.crt -noout -text
     # create a key pair
     if key is None:
-        k = generate_client_key_pair("passphrase")
+        client_pub_key = generate_client_key_pair("passphrase")
     else:
-        k = crypto.load_publickey(crypto.FILETYPE_PEM, key)
+        client_pub_key = crypto.load_publickey(crypto.FILETYPE_PEM, key)
     # create a self-signed cert
     cert = crypto.X509()
     cert.get_subject().C = countryName
@@ -62,9 +62,9 @@ def generate_client_certificate(
     cert.gmtime_adj_notBefore(0)
     cert.gmtime_adj_notAfter(validityEndInSeconds)
     cert.set_issuer(cert.get_subject())
-    cert.set_pubkey(k)
-    pkey = get_server_key()
-    cert.sign(pkey, 'sha512')
+    cert.set_pubkey(client_pub_key)
+    server_pub_key = get_server_key()
+    cert.sign(server_pub_key, 'sha512')
     dumped_cert = crypto.dump_certificate(crypto.FILETYPE_PEM, cert).decode("utf-8")
     with open(CERT_FILE, "wt") as f:
         f.write(dumped_cert)
