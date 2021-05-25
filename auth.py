@@ -1,11 +1,14 @@
 from ldap3 import Server, Connection, ALL, SUBTREE
 from ldap3.core.exceptions import LDAPException, LDAPBindError
-from flask import request, session, Response
+from flask import request, session, Response, send_file
 
 # ldap server hostname and port
+from certificates import generate_client_certificate, get_client_certificate
+
 ldap_server = f"ldap://localhost:10389"
 
 connection = None
+
 
 # sample user
 def sample_user():
@@ -82,18 +85,22 @@ def subscribe(user):
     object_class = ['inetOrgPerson', 'organizationalPerson', 'person', 'top']
     ldap_user["objectClass"] = object_class
     ldap_attr = create_user(user, ldap_user)
-
+    generate_client_certificate(emailAddress= ldap_user["mail"], commonName=ldap_user['cn'])
+    ldap_user["userCertificate"] = get_client_certificate("client_certificate/cert.pem")
     # Bind connection to LDAP server
     ldap_conn = root_connect()
     user_dn = f'cn={ldap_attr["cn"]},ou=users,ou=system'
+    print('hey')
     try:
         # object class for a user is inetOrgPerson
         ldap_conn.add(dn=user_dn,
                       attributes=ldap_attr)
         print(ldap_conn.result)
+        print("hyooooooo")
     except LDAPException as e:
         response = e
         print(e)
+    print("hey")
     return ldap_conn.result
 
 

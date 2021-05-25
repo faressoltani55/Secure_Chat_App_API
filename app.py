@@ -1,8 +1,9 @@
+import io
 from datetime import datetime, timedelta
 from functools import wraps
 import auth
 import jwt
-from flask import request, jsonify, Flask, session
+from flask import request, jsonify, Flask, session, send_file
 
 # Create the application instance
 from pki import generate_server_certificate
@@ -57,7 +58,11 @@ def sign_up():
     user["email"] = request.json["email"]
     user["username"] = request.json["username"]
     user["password"] = request.json["password"]
-    return jsonify({"response": str(auth.subscribe(user))})
+    auth.subscribe(user)
+    with open("client_certificate/cert.pem", "rb") as f:
+        bytes = io.BytesIO(f.read())
+    return send_file(bytes, mimetype='application/octet-stream')
+    # jsonify({"response": str(auth.subscribe(user))})
 
 
 @app.route('/logout')
@@ -86,4 +91,4 @@ def authorized():
 
 # If we're running in stand alone mode, run the application
 if __name__ == '__main__':
-    app.run(ssl_context=('pki/certificate.crt', 'pki/.pem'), debug=True)
+    app.run(ssl_context=('server_pki/cert.pem', 'server_pki/.pem'), debug=True)
