@@ -59,11 +59,8 @@ def sign_up():
     user["email"] = request.json["email"]
     user["username"] = request.json["username"]
     user["password"] = request.json["password"]
-    auth.subscribe(user)
-    with open("client_certificate/cert.pem", "rb") as f:
-        bytes = io.BytesIO(f.read())
-    return send_file(bytes, mimetype='application/octet-stream')
-    # jsonify({"response": str(auth.subscribe(user))})
+    user["pubkey"] = request.json["pubkey"]
+    return jsonify({"response": str(auth.subscribe(user))})
 
 
 @app.route('/logout')
@@ -82,7 +79,7 @@ def get_user_certificate(username):
 @app.route('/sign', methods=['POST'])
 @check_for_token
 def get_signed_certificate():
-    pub_key = request.json["publicKey"]
+    pub_key = request.json["pubkey"]
     username = request.json["username"]
     email = request.json["email"]
     return jsonify(str(certificates.generate_client_certificate(emailAddress=email, commonName=username, key=pub_key)))

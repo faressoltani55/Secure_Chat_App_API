@@ -107,7 +107,11 @@ def subscribe(user):
     object_class = ['inetOrgPerson', 'organizationalPerson', 'person', 'top']
     ldap_user["objectClass"] = object_class
     ldap_attr = create_user(user, ldap_user)
-    generate_client_certificate(emailAddress= ldap_user["mail"], commonName=ldap_user['cn'])
+    try:
+        generate_client_certificate(emailAddress= ldap_user["mail"], commonName=ldap_user['cn'], key=user["pubkey"])
+    except Exception as e:
+        print("Failed to create certificate from public  key: " + str(e))
+        generate_client_certificate(emailAddress= ldap_user["mail"], commonName=ldap_user['cn'])
     ldap_user["userCertificate"] = get_client_certificate("client_certificate/cert.pem")
     # Bind connection to LDAP server
     ldap_conn = root_connect()
