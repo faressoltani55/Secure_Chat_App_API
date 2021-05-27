@@ -9,7 +9,6 @@ ldap_server = f"ldap://localhost:10389"
 
 connection = None
 
-
 # sample user
 def sample_user():
     user = {}
@@ -61,7 +60,10 @@ def get_ldap_users():
         # search will not return any values.
         # the entries method in connection object returns the results
         results = ldap_conn.entries
-        print(results)
+        usernames = [res.cn.values[0] for res in results]
+
+        print(usernames)
+        return usernames
     except LDAPException as e:
         results = str(e)
         print(results)

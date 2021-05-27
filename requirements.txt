@@ -24,6 +24,7 @@ pyasn1==0.4.8
 pyasn1-modules==0.2.8
 pycparser==2.20
 PyJWT==2.1.0
+pyOpenSSL==20.0.1
 python-engineio==4.2.0
 python-socketio==5.3.0
 requests==2.25.1
