@@ -1,4 +1,8 @@
 from OpenSSL import crypto
+import OpenSSL
+import base64
+
+from cryptography.hazmat.primitives import serialization
 
 
 def get_server_key():
@@ -48,7 +52,9 @@ def generate_client_certificate(
     if key is None:
         client_pub_key = generate_client_key_pair("passphrase")
     else:
-        client_pub_key = crypto.load_publickey(crypto.FILETYPE_PEM, key)
+        key = base64.b64decode(key)
+        public_key = serialization.load_pem_public_key(key)
+        client_pub_key = crypto.PKey.from_cryptography_key(public_key)
     # create a self-signed cert
     cert = crypto.X509()
     cert.get_subject().C = countryName
