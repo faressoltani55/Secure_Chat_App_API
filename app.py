@@ -1,9 +1,11 @@
-import io
 from datetime import datetime, timedelta
 from functools import wraps
+
+from flask_socketio import SocketIO, emit
+
 import auth
 import jwt
-from flask import request, jsonify, Flask, session, send_file
+from flask import request, jsonify, Flask, session, send_file, render_template
 
 # Create the application instance
 import certificates
@@ -11,6 +13,26 @@ from pki import generate_server_certificate
 
 app = Flask(__name__, template_folder="templates")
 app.config['SECRET_KEY'] = 'ChatAppSecretKey'
+sio = SocketIO(app, cors_allowed_origins="*")
+
+users = {}
+
+
+@sio.on('username', namespace='/private')
+def receive_username(username):
+    print(username)
+    users[username] = request.sid
+    print(users)
+    print('Username added!')
+
+
+@sio.on('private_message', namespace='/private')
+def private_message(payload):
+    recipient_session_id = users[payload['username']]
+    message = payload['message']
+    print(message)
+    emit('private_message', message, room=recipient_session_id)
+    print("message_sent")
 
 
 def check_for_token(func):
@@ -27,6 +49,11 @@ def check_for_token(func):
         return func(*args, **kwargs)
 
     return wrapper
+
+
+@app.route('/')
+def index():
+    return render_template('index.html')
 
 
 # Create a URL route in our application for "/"
@@ -104,4 +131,6 @@ def authorized():
 
 # If we're running in stand alone mode, run the application
 if __name__ == '__main__':
-    app.run(ssl_context=('server_pki/cert.pem', 'server_pki/.pem'), debug=True)
+    # app.run(ssl_context=('server_pki/cert.pem', 'server_pki/.pem'), debug=True)
+    sio.run(app, port=5000)
+    # sio.run(app, debug=True)

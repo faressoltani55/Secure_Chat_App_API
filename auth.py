@@ -9,6 +9,7 @@ ldap_server = f"ldap://localhost:10389"
 
 connection = None
 
+
 # sample user
 def sample_user():
     user = {}
@@ -26,7 +27,7 @@ root_dn = "dc=example,dc=org"
 def root_connect():
     ldap_username = "admin"
     ldap_password = "secret"
-    return connect(ldap_username,ldap_password)
+    return connect(ldap_username, ldap_password)
 
 
 def connect(username, password):
@@ -110,10 +111,10 @@ def subscribe(user):
     ldap_user["objectClass"] = object_class
     ldap_attr = create_user(user, ldap_user)
     try:
-        generate_client_certificate(emailAddress= ldap_user["mail"], commonName=ldap_user['cn'], key=user["pubkey"])
+        generate_client_certificate(emailAddress=ldap_user["mail"], commonName=ldap_user['cn'], key=user["pubkey"])
     except Exception as e:
         print("Failed to create certificate from public  key: " + str(e))
-        generate_client_certificate(emailAddress= ldap_user["mail"], commonName=ldap_user['cn'])
+        generate_client_certificate(emailAddress=ldap_user["mail"], commonName=ldap_user['cn'])
     ldap_user["userCertificate"] = get_client_certificate("client_certificate/cert.pem")
     # Bind connection to LDAP server
     ldap_conn = root_connect()
@@ -139,3 +140,4 @@ def sign_in(username, password):
         return "Authentication failed : " + str(e)
     except Exception as e:
         return "Error : " + str(e)
+
