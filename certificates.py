@@ -1,5 +1,4 @@
 from OpenSSL import crypto
-import OpenSSL
 import base64
 
 from cryptography.hazmat.primitives import serialization
